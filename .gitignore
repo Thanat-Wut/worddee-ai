@@ -1,0 +1,45 @@
+# ════════════════════════════════════════════════════════════════
+# WORDDEE-AI - Git Ignore Rules (Full Stack)
+# ════════════════════════════════════════════════════════════════
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+# Next.js
+.next/
+out/
+.vercel
+.turbo
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+# Docker
+.docker/
+docker-compose.override.yml
+# Database
+postgres_data/
+n8n_data/
+*.db
+*.sqlite
+# Logs
+*.log
+logs/
