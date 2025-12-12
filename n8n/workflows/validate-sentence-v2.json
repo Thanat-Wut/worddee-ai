@@ -1,0 +1,126 @@
+{
+  "name": "Validate Sentence v2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "validate-sentence",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "multiplex",
+        "options": {}
+      },
+      "id": "ai-agent",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "result",
+              "name": "result",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "extract-output",
+      "name": "Extract Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Gemini response and convert to backend format\nconst result = items[0].json.result;\n\nlet parsed;\ntry {\n  // Try to extract JSON from the response\n  const jsonMatch = result.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    parsed = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found');\n  }\n} catch (error) {\n  console.log('Parse error:', error);\n  // Fallback if parsing fails\n  parsed = {\n    score: 5,\n    cefr_level: 'B1',\n    is_correct: false,\n    feedback: 'Unable to analyze sentence properly.',\n    corrected_sentence: items[0].json.body.sentence\n  };\n}\n\n// Map fields to backend format\nconst output = {\n  score: Number(parsed.score) || 5,\n  cefr_level: String(parsed.cefr_level || 'B1').replace('/', '').split('/')[0], // Fix \"A1/A2\" to \"A1\"\n  is_correct: Boolean(parsed.is_correct !== false && parsed.score >= 6),\n  feedback: String(parsed.feedback || 'Good attempt!'),\n  corrected_sentence: String(parsed.corrected_sentence || parsed.corrected_version || items[0].json.body.sentence),\n  original_word: items[0].json.body.word,\n  original_sentence: items[0].json.body.sentence\n};\n\nreturn { json: output };"}
+      },
+      "id": "format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Output": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-13T00:00:00.000Z",
+  "versionId": "2"
+}
