@@ -1,23 +1,22 @@
 """
-════════════════════════════════════════════════════════════════
 AI Service - Sentence validation via n8n webhook
-════════════════════════════════════════════════════════════════
 """
 import os
 import httpx
+import logging
 from typing import Dict
 
+logger = logging.getLogger(__name__)
 
 class AIService:
-    """
-    Service for validating sentences using n8n workflow with Gemini AI.
-    """
+    """Service for validating sentences using n8n workflow with Gemini AI."""
     
     def __init__(self):
         self.webhook_url = os.getenv(
             "N8N_WEBHOOK_URL",
             "http://n8n:5678/webhook/validate-sentence"
         )
+        self.timeout = 60.0
     
     async def validate_sentence(
         self,
@@ -25,51 +24,64 @@ class AIService:
         definition: str,
         sentence: str
     ) -> Dict:
-        """
-        Validate a practice sentence using AI.
+        """Validate a practice sentence using AI."""
+        payload = {
+            "word": word,
+            "definition": definition,
+            "sentence": sentence
+        }
         
-        Args:
-            word: The vocabulary word being practiced
-            definition: Word definition
-            sentence: User's sentence
+        logger.info(f"Sending to n8n: {payload}")
         
-        Returns:
-            Dict with score, cefr_level, feedback, corrected_sentence
-        """
         try:
-            payload = {
-                "word": word,
-                "definition": definition,
-                "sentence": sentence
-            }
-            
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
                 response = await client.post(
                     self.webhook_url,
                     json=payload
                 )
+                
+                logger.info(f"n8n response status: {response.status_code}")
                 response.raise_for_status()
-                return response.json()
+                data = response.json()
+                logger.info(f"n8n response data: {data}")
+                
+                if isinstance(data, list) and len(data) > 0:
+                    result = data[0]
+                else:
+                    result = data
+                
+                return {
+                    "score": float(result.get("score", 7.0)),
+                    "cefr_level": str(result.get("cefr_level", "B1")).strip(),
+                    "is_correct": bool(result.get("is_correct", True)),
+                    "feedback": str(result.get("feedback", "Good attempt!")),
+                    "corrected_sentence": result.get("corrected_sentence") or sentence
+                }
+        
+        except httpx.TimeoutException as e:
+            logger.error(f"n8n timeout: {e}")
+            return self._get_mock_validation(sentence, "timeout")
+        
+        except httpx.HTTPStatusError as e:
+            logger.error(f"n8n HTTP error: {e.response.status_code}")
+            return self._get_mock_validation(sentence, f"error {e.response.status_code}")
         
         except Exception as e:
-            print(f"Error validating sentence: {e}")
-            # Return mock result if n8n is not available
-            return self._get_mock_validation(sentence)
+            logger.error(f"Unexpected error: {e}")
+            return self._get_mock_validation(sentence, "system error")
     
-    def _get_mock_validation(self, sentence: str) -> Dict:
-        """
-        Generate mock validation result (fallback when n8n is unavailable).
+    def _get_mock_validation(self, sentence: str, error_msg: str = None) -> Dict:
+        """Generate mock validation result."""
+        feedback = "Good attempt! Your sentence demonstrates understanding."
+        if error_msg:
+            feedback = f"[Mock - {error_msg}] {feedback}"
         
-        Args:
-            sentence: User's sentence
-        
-        Returns:
-            Mock validation result
-        """
         return {
             "score": 7.0,
             "cefr_level": "B1",
             "is_correct": True,
-            "feedback": "Good attempt! Your sentence demonstrates understanding of the word. (Note: This is a mock result - n8n workflow not configured yet)",
+            "feedback": feedback,
             "corrected_sentence": sentence
         }
+
+ai_service = AIService()
