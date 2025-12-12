@@ -1,27 +1,16 @@
--- ════════════════════════════════════════════════════════════════
--- WORDDEE.AI - Database Schema Initialization
--- ════════════════════════════════════════════════════════════════
-
 CREATE TYPE difficulty_enum AS ENUM ('Beginner', 'Intermediate', 'Advanced');
 
--- Words Table
 CREATE TABLE words (
     id SERIAL PRIMARY KEY,
     word VARCHAR(100) UNIQUE NOT NULL,
     definition TEXT NOT NULL,
-    part_of_speech VARCHAR(50),
-    pronunciation VARCHAR(100),
     difficulty_level difficulty_enum NOT NULL,
-    image_url TEXT,
-    example_sentence TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    CONSTRAINT word_lowercase CHECK (word = LOWER(word)),
-    CONSTRAINT definition_length CHECK (LENGTH(definition) >= 10)
+    CONSTRAINT word_lowercase CHECK (word = LOWER(word))
 );
 
--- Practice Sessions Table
+
 CREATE TABLE practice_sessions (
     id SERIAL PRIMARY KEY,
     word_id INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
@@ -30,26 +19,48 @@ CREATE TABLE practice_sessions (
     cefr_level VARCHAR(10),
     feedback TEXT,
     corrected_sentence TEXT,
-    session_duration_ms INTEGER,
-    practiced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT sentence_not_empty CHECK (LENGTH(TRIM(user_sentence)) > 0)
+    practiced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes
 CREATE INDEX idx_words_difficulty ON words(difficulty_level);
 CREATE INDEX idx_sessions_word_id ON practice_sessions(word_id);
 CREATE INDEX idx_sessions_practiced_at ON practice_sessions(practiced_at DESC);
 
--- Seed Data (10 Beginner words)
-INSERT INTO words (word, definition, part_of_speech, pronunciation, difficulty_level, example_sentence) VALUES
-('apple', 'A round fruit with red, green, or yellow skin', 'noun', '/ˈæp.əl/', 'Beginner', 'I eat an apple every morning.'),
-('happy', 'Feeling pleasure or contentment', 'adjective', '/ˈhæp.i/', 'Beginner', 'She looks very happy today.'),
-('run', 'Move quickly using legs', 'verb', '/rʌn/', 'Beginner', 'I run in the park every day.'),
-('book', 'A written work', 'noun', '/bʊk/', 'Beginner', 'This is an interesting book.'),
-('water', 'Clear liquid', 'noun', '/ˈwɔː.tər/', 'Beginner', 'Drink water daily.'),
-('friend', 'Person you like', 'noun', '/frend/', 'Beginner', 'He is my best friend.'),
-('eat', 'Consume food', 'verb', '/iːt/', 'Beginner', 'We eat dinner together.'),
-('beautiful', 'Pleasing to senses', 'adjective', '/ˈbjuː.tɪ.fəl/', 'Beginner', 'Beautiful sunset.'),
-('help', 'Make easier', 'verb', '/help/', 'Beginner', 'Can you help me?'),
-('school', 'Place for education', 'noun', '/skuːl/', 'Beginner', 'Children go to school.');
+-- SEED DATA (30 words)
+
+
+INSERT INTO words (word, definition, difficulty_level) VALUES
+
+('apple', 'A round fruit with red, green, or yellow skin', 'Beginner'),
+('library', 'A place where books are kept for reading', 'Beginner'),
+('garden', 'A piece of ground for growing flowers, fruit, or vegetables', 'Beginner'),
+('happy', 'Feeling or showing pleasure', 'Beginner'),
+('book', 'A written work consisting of pages', 'Beginner'),
+('water', 'A clear liquid without color or taste', 'Beginner'),
+('friend', 'A person you know well and like', 'Beginner'),
+('school', 'A place where children go to learn', 'Beginner'),
+('cat', 'A small furry animal often kept as a pet', 'Beginner'),
+('house', 'A building where people live', 'Beginner'),
+
+
+('ambitious', 'Having a strong desire to succeed', 'Intermediate'),
+('collaborate', 'To work together with others', 'Intermediate'),
+('innovative', 'Featuring new methods; advanced and original', 'Intermediate'),
+('efficient', 'Achieving maximum productivity with minimum effort', 'Intermediate'),
+('analyze', 'Examine something in detail', 'Intermediate'),
+('responsible', 'Having a duty to deal with something', 'Intermediate'),
+('opportunity', 'A chance for advancement or progress', 'Intermediate'),
+('communicate', 'Share or exchange information', 'Intermediate'),
+('flexible', 'Able to change easily', 'Intermediate'),
+('achieve', 'Successfully reach a desired goal', 'Intermediate'),
+('significant', 'Important enough to have an effect', 'Intermediate'),
+('maintain', 'Keep something in good condition', 'Intermediate'),
+
+('perseverance', 'Continued effort despite difficulties', 'Advanced'),
+('ubiquitous', 'Present, appearing, or found everywhere', 'Advanced'),
+('meticulous', 'Showing great attention to detail', 'Advanced'),
+('paradigm', 'A typical example or pattern of something', 'Advanced'),
+('facilitate', 'Make an action or process easier', 'Advanced'),
+('comprehensive', 'Complete and including everything necessary', 'Advanced'),
+('mitigate', 'Make something less severe or serious', 'Advanced'),
+('ephemeral', 'Lasting for a very short time', 'Advanced');
