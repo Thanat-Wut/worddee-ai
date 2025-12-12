@@ -5,17 +5,15 @@
  */
 import { Word } from '@/lib/api';
 
-export default function WordCard({ word }: { word: Word }) {
+interface WordCardProps {
+  word: Word;
+}
+
+export default function WordCard({ word }: WordCardProps) {
   return (
-    <div className="card">
+    <div className="card word-card">
       <h2 className="word">{word.word}</h2>
-      {word.pronunciation && (
-        <p className="pronunciation">{word.pronunciation}</p>
-      )}
       <p className="definition">{word.definition}</p>
-      {word.example_sentence && (
-        <p className="example">Example: {word.example_sentence}</p>
-      )}
       <span className="badge">{word.difficulty_level}</span>
     </div>
   );

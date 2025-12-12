@@ -1,28 +1,61 @@
 /**
  * ════════════════════════════════════════════════════════════════
- * Practice Result Display
+ * Practice Result Display Card
  * ════════════════════════════════════════════════════════════════
  */
 import { PracticeResult } from '@/lib/api';
 
-export default function ResultCard({ result }: { result: PracticeResult }) {
-  const getScoreColor = (score: number) => {
-    if (score >= 8) return '#10b981';
-    if (score >= 6) return '#f59e0b';
-    return '#ef4444';
+interface ResultCardProps {
+  result: PracticeResult;
+}
+
+export default function ResultCard({ result }: ResultCardProps) {
+  const getScoreClass = (score: number) => {
+    if (score >= 9) return 'excellent';
+    if (score >= 7) return 'good';
+    if (score >= 5) return 'fair';
+    return 'poor';
+  };
+
+  const getScoreMessage = (score: number) => {
+    if (score >= 9) return 'Excellent! 🎉';
+    if (score >= 7) return 'Good job! 👍';
+    if (score >= 5) return 'Not bad! 💪';
+    return 'Keep practicing! 📚';
   };
 
   return (
-    <div className="result-card">
-      <div className="score" style={{ color: getScoreColor(result.score) }}>
-        Score: {result.score}/10
+    <div className="card result-card">
+      <div className="score-display">
+        <div className={`score-number ${getScoreClass(result.score)}`}>
+          {result.score.toFixed(1)}
+        </div>
+        <div style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 600 }}>
+          {getScoreMessage(result.score)}
+        </div>
+        <span className="cefr-level">
+          CEFR Level: {result.cefr_level}
+        </span>
       </div>
-      <div className="level">Level: {result.cefr_level}</div>
-      <p className="feedback">{result.feedback}</p>
-      {result.corrected_sentence && (
-        <p className="correction">
-          <strong>Suggestion:</strong> {result.corrected_sentence}
-        </p>
+
+      <div className="feedback-section">
+        <h3>📝 Feedback</h3>
+        <div className="feedback-text">
+          {result.feedback}
+        </div>
+      </div>
+
+      {result.corrected_sentence && result.corrected_sentence !== result.user_sentence && (
+        <div className="sentence-comparison">
+          <div className="sentence-box">
+            <h4>Your Sentence</h4>
+            <p>{result.user_sentence}</p>
+          </div>
+          <div className="sentence-box">
+            <h4>Suggested Correction</h4>
+            <p>{result.corrected_sentence}</p>
+          </div>
+        </div>
       )}
     </div>
   );

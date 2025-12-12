@@ -1,158 +1,461 @@
-/* ════════════════════════════════════════════════════════════════
-   Global Styles
-   ════════════════════════════════════════════════════════════════ */
+/**
+ * ════════════════════════════════════════════════════════════════
+ * Global Styles for Worddee-AI
+ * ════════════════════════════════════════════════════════════════
+ */
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   color: #333;
+  line-height: 1.6;
 }
 
-header {
-  background: white;
-  padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Navigation
+ * ════════════════════════════════════════════════════════════════ */
+
+.nav {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+}
+
+.nav-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-header h1 {
-  font-size: 1.5rem;
-}
-
-nav a {
-  margin-left: 1rem;
-  text-decoration: none;
-  color: #667eea;
-  font-weight: 500;
-}
-
-main {
   max-width: 800px;
-  margin: 2rem auto;
+  margin: 0 auto;
   padding: 0 1rem;
 }
 
-.card, .result-card {
+.nav-title {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.nav-link:hover {
+  opacity: 0.8;
+}
+
+.nav-link.active {
+  text-decoration: underline;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Page Headers
+ * ════════════════════════════════════════════════════════════════ */
+
+h1, h2 {
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Cards
+ * ════════════════════════════════════════════════════════════════ */
+
+.card {
   background: white;
-  border-radius: 12px;
   padding: 2rem;
-  margin: 1rem 0;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Word Card
+ * ════════════════════════════════════════════════════════════════ */
+
+.word-card {
+  text-align: center;
 }
 
 .word {
-  font-size: 2.5rem;
+  font-size: 3rem;
+  font-weight: 700;
   color: #667eea;
   margin-bottom: 0.5rem;
 }
 
-.pronunciation {
-  color: #888;
-  font-style: italic;
-  margin-bottom: 1rem;
-}
-
 .definition {
   font-size: 1.1rem;
-  margin: 1rem 0;
-}
-
-.example {
   color: #666;
-  font-style: italic;
-  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .badge {
   display: inline-block;
-  background: #667eea;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  background: #f0f4ff;
+  color: #667eea;
+  border-radius: 20px;
   font-size: 0.875rem;
-  margin-top: 1rem;
+  font-weight: 600;
 }
 
+/* ════════════════════════════════════════════════════════════════
+ * Practice Form
+ * ════════════════════════════════════════════════════════════════ */
+
 .practice-form {
-  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .practice-form textarea {
   width: 100%;
   padding: 1rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
   font-size: 1rem;
+  font-family: inherit;
   resize: vertical;
+  transition: border-color 0.2s;
 }
 
-.practice-form button {
-  width: 100%;
-  padding: 1rem;
-  margin-top: 1rem;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+.practice-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
 }
 
-.practice-form button:hover:not(:disabled) {
-  background: #5568d3;
-}
-
-.practice-form button:disabled {
-  opacity: 0.5;
+.practice-form textarea:disabled {
+  background: #f5f5f5;
   cursor: not-allowed;
 }
 
-.score {
-  font-size: 2rem;
-  font-weight: bold;
+.practice-form button {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.practice-form button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+}
+
+.practice-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Result Card
+ * ════════════════════════════════════════════════════════════════ */
+
+.result-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.score-display {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.score-number {
+  font-size: 4rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
-.level {
-  font-size: 1.2rem;
-  color: #667eea;
-  margin-bottom: 1rem;
+.score-number.excellent {
+  color: #10b981;
 }
 
-.feedback {
-  margin: 1rem 0;
-  line-height: 1.6;
+.score-number.good {
+  color: #3b82f6;
 }
 
-.correction {
-  background: #fef3c7;
+.score-number.fair {
+  color: #f59e0b;
+}
+
+.score-number.poor {
+  color: #ef4444;
+}
+
+.cefr-level {
+  display: inline-block;
+  padding: 0.5rem 1.5rem;
+  background: white;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.feedback-section {
+  margin-top: 1.5rem;
+}
+
+.feedback-section h3 {
+  color: #333;
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.feedback-text {
+  background: white;
   padding: 1rem;
   border-radius: 8px;
-  margin-top: 1rem;
+  color: #555;
+  line-height: 1.8;
 }
+
+.sentence-comparison {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.sentence-box {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.sentence-box h4 {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sentence-box p {
+  color: #333;
+  font-size: 1.1rem;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Buttons
+ * ════════════════════════════════════════════════════════════════ */
+
+.button {
+  padding: 0.75rem 1.5rem;
+  background: white;
+  color: #667eea;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.button:hover {
+  background: transparent;
+  color: white;
+  border-color: white;
+}
+
+.button-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Loading & Error States
+ * ════════════════════════════════════════════════════════════════ */
 
 .loading {
   text-align: center;
   padding: 3rem;
-  font-size: 1.2rem;
   color: white;
+  font-size: 1.25rem;
+}
+
+.loading::after {
+  content: '...';
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
 }
 
 .error {
-  background: #fee2e2;
-  color: #991b1b;
+  background: #fee;
+  color: #c33;
   padding: 1rem;
   border-radius: 8px;
-  margin: 1rem 0;
+  margin-bottom: 1rem;
+  border-left: 4px solid #c33;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Dashboard Specific
+ * ════════════════════════════════════════════════════════════════ */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.stat-label {
+  color: #666;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.5rem;
+}
+
+.session-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.session-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.session-score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.session-info {
+  flex: 1;
+}
+
+.session-sentence {
+  color: #333;
+  font-weight: 500;
+}
+
+.session-meta {
+  color: #999;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ════════════════════════════════════════════════════════════════
+ * Responsive Design
+ * ════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .word {
+    font-size: 2rem;
+  }
+
+  .score-number {
+    font-size: 3rem;
+  }
+
+  .nav-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .session-item {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
 }

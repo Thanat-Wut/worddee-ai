@@ -25,7 +25,8 @@ export default function PracticePage() {
       const data = await api.getRandomWord();
       setWord(data);
     } catch (err) {
-      setError('Failed to load word. Please try again.');
+      console.error('Error loading word:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load word. Please check if the backend is running.');
     } finally {
       setLoading(false);
     }
@@ -40,7 +41,8 @@ export default function PracticePage() {
       const data = await api.submitPractice(word.id, sentence);
       setResult(data);
     } catch (err) {
-      setError('Failed to validate sentence. Please try again.');
+      console.error('Error submitting practice:', err);
+      setError(err instanceof Error ? err.message : 'Failed to validate sentence. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -52,30 +54,34 @@ export default function PracticePage() {
 
   return (
     <div>
-      <h2 style={{ color: 'white', marginBottom: '1rem' }}>Practice Your English</h2>
+      <h2>Practice Your English</h2>
       
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
       
-      {loading && !word && <div className="loading">Loading word...</div>}
+      {loading && !word && (
+        <div className="card">
+          <div className="loading">Loading word</div>
+        </div>
+      )}
       
       {word && (
         <>
           <WordCard word={word} />
-          <PracticeForm onSubmit={handleSubmit} loading={loading} />
+          <div className="card">
+            <PracticeForm onSubmit={handleSubmit} loading={loading} />
+          </div>
           {result && <ResultCard result={result} />}
           <button
             onClick={loadWord}
-            style={{
-              marginTop: '1rem',
-              padding: '0.75rem 1.5rem',
-              background: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: '600',
-            }}
+            className="button button-primary"
+            style={{ marginTop: '1rem', width: '100%' }}
+            disabled={loading}
           >
-            Next Word →
+            {loading ? 'Loading...' : 'Next Word →'}
           </button>
         </>
       )}
