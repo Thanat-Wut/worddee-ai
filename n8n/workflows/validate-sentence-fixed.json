@@ -1,0 +1,224 @@
+{
+  "name": "Validate English Sentence - Fixed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "validate-sentence",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "validate-sentence"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "prompt",
+              "name": "prompt",
+              "value": "=You are an expert English teacher. Analyze the following sentence:\n\nWord to practice: {{ $json.body.word }}\nDefinition: {{ $json.body.definition }}\nStudent's sentence: {{ $json.body.sentence }}\n\nProvide your analysis in JSON format with these fields:\n- score: number 0-10 (grammar, vocabulary usage, sentence structure)\n- cefr_level: string (A1, A2, B1, B2, C1, or C2)\n- is_correct: boolean\n- feedback: string (detailed constructive feedback)\n- corrected_sentence: string (corrected version or original if perfect)\n\nScoring guide:\n0-3: Major errors, word misused\n4-5: Multiple errors, incorrect usage\n6-7: Minor errors, acceptable usage\n8-9: Good sentence, minor improvements\n10: Perfect",
+              "type": "string"
+            },
+            {
+              "id": "word",
+              "name": "word",
+              "value": "={{ $json.body.word }}",
+              "type": "string"
+            },
+            {
+              "id": "sentence",
+              "name": "sentence",
+              "value": "={{ $json.body.sentence }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "prepare-data",
+      "name": "Prepare Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "modelId": "gemini-1.5-flash",
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 500
+        }
+      },
+      "id": "gemini-chat",
+      "name": "Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "googleGeminiOAuth2Api": {
+          "id": "gemini-api",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "jsonSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 10\n    },\n    \"cefr_level\": {\n      \"type\": \"string\",\n      \"enum\": [\"A1\", \"A2\", \"B1\", \"B2\", \"C1\", \"C2\"]\n    },\n    \"is_correct\": {\n      \"type\": \"boolean\"\n    },\n    \"feedback\": {\n      \"type\": \"string\"\n    },\n    \"corrected_sentence\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\"score\", \"cefr_level\", \"is_correct\", \"feedback\", \"corrected_sentence\"]\n}"
+      },
+      "id": "output-parser",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "score",
+              "name": "score",
+              "value": "={{ $json.score }}",
+              "type": "number"
+            },
+            {
+              "id": "cefr_level",
+              "name": "cefr_level",
+              "value": "={{ $json.cefr_level }}",
+              "type": "string"
+            },
+            {
+              "id": "is_correct",
+              "name": "is_correct",
+              "value": "={{ $json.is_correct }}",
+              "type": "boolean"
+            },
+            {
+              "id": "feedback",
+              "name": "feedback",
+              "value": "={{ $json.feedback }}",
+              "type": "string"
+            },
+            {
+              "id": "corrected_sentence",
+              "name": "corrected_sentence",
+              "value": "={{ $json.corrected_sentence }}",
+              "type": "string"
+            },
+            {
+              "id": "original_word",
+              "name": "original_word",
+              "value": "={{ $('Prepare Data').item.json.word }}",
+              "type": "string"
+            },
+            {
+              "id": "original_sentence",
+              "name": "original_sentence",
+              "value": "={{ $('Prepare Data').item.json.sentence }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Google Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini": {
+      "main": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-12-13T00:00:00.000Z",
+  "versionId": "1"
+}
