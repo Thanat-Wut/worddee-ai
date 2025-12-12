@@ -1,46 +1,75 @@
-import httpx
+"""
+════════════════════════════════════════════════════════════════
+AI Service - Sentence validation via n8n webhook
+════════════════════════════════════════════════════════════════
+"""
 import os
-from fastapi import HTTPException, status
-from schemas.practice import ValidationResult
+import httpx
+from typing import Dict
+
 
 class AIService:
-    """Service to validate sentences via n8n + Gemini"""
+    """
+    Service for validating sentences using n8n workflow with Gemini AI.
+    """
     
     def __init__(self):
-        self.webhook_url = os.getenv("N8N_WEBHOOK_URL", "http://n8n:5678/webhook/validate-sentence")
+        self.webhook_url = os.getenv(
+            "N8N_WEBHOOK_URL",
+            "http://n8n:5678/webhook/validate-sentence"
+        )
     
-    async def validate_sentence(self, word: str, user_sentence: str) -> ValidationResult:
-
-        payload = {
-            "word": word,
-            "sentence": user_sentence
-        }
+    async def validate_sentence(
+        self,
+        word: str,
+        definition: str,
+        sentence: str
+    ) -> Dict:
+        """
+        Validate a practice sentence using AI.
         
-        async with httpx.AsyncClient() as client:
-            try:
+        Args:
+            word: The vocabulary word being practiced
+            definition: Word definition
+            sentence: User's sentence
+        
+        Returns:
+            Dict with score, cefr_level, feedback, corrected_sentence
+        """
+        try:
+            payload = {
+                "word": word,
+                "definition": definition,
+                "sentence": sentence
+            }
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
                     self.webhook_url,
-                    json=payload,
-                    timeout=30.0  # AI might take time
+                    json=payload
                 )
                 response.raise_for_status()
-                data = response.json()
-                
-                # Parse n8n response
-                return ValidationResult(
-                    score=data.get("score", 5.0),
-                    cefr_level=data.get("cefr_level", "A2"),
-                    feedback=data.get("feedback", "Sentence validated."),
-                    corrected_sentence=data.get("corrected_sentence")
-                )
-                
-            except httpx.HTTPError as e:
-                # If n8n is not ready, return mock result
-                return ValidationResult(
-                    score=7.0,
-                    cefr_level="B1",
-                    feedback=f"[Mock] Good use of '{word}'. (n8n not configured yet)",
-                    corrected_sentence=None
-                )
-
-ai_service = AIService()
+                return response.json()
+        
+        except Exception as e:
+            print(f"Error validating sentence: {e}")
+            # Return mock result if n8n is not available
+            return self._get_mock_validation(sentence)
+    
+    def _get_mock_validation(self, sentence: str) -> Dict:
+        """
+        Generate mock validation result (fallback when n8n is unavailable).
+        
+        Args:
+            sentence: User's sentence
+        
+        Returns:
+            Mock validation result
+        """
+        return {
+            "score": 7.0,
+            "cefr_level": "B1",
+            "is_correct": True,
+            "feedback": "Good attempt! Your sentence demonstrates understanding of the word. (Note: This is a mock result - n8n workflow not configured yet)",
+            "corrected_sentence": sentence
+        }
