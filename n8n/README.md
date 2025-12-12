@@ -1,245 +1,161 @@
-# n8n Workflow - AI Sentence Validation
+# n8n Workflow Setup Guide
 
-## 🎯 Overview
+## Overview
 
-This workflow uses Google Gemini AI to validate English sentences and provide detailed feedback.
+This directory contains the n8n workflow for AI-powered English sentence validation using Google Gemini.
 
-## 📋 Setup Instructions
+## Quick Setup
 
-### Step 1: Get Gemini API Key
+### 1. Get Gemini API Key
 
 1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Sign in with your Google account
-3. Click **"Get API Key"** or **"Create API Key"**
-4. Copy your API key (starts with `AIzaSy...`)
+3. Click "Create API Key"
+4. Copy the API key
 
-### Step 2: Configure Environment
+### 2. Configure Environment
 
-1. Open `worddee-ai/.env` file
-2. Add your Gemini API key:
-   ```bash
-   GEMINI_API_KEY=AIzaSyD_your_actual_key_here
-   ```
-3. Save the file
+Add your Gemini API key to `.env` file:
 
-### Step 3: Access n8n Interface
+```bash
+GEMINI_API_KEY=your_api_key_here
+```
 
-1. Make sure Docker is running:
-   ```bash
-   cd /path/to/worddee-ai
-   docker-compose up -d
-   ```
+### 3. Import Workflow
 
-2. Open n8n in browser:
-   ```
-   http://localhost:5678
-   ```
-
-3. Login with credentials from `.env`:
-   - **Username**: `admin`
-   - **Password**: `admin_password_456!`
-
-### Step 4: Import Workflow
-
-1. In n8n interface, click **"Workflows"** in left sidebar
-2. Click **"Add Workflow"** (+ button)
-3. Click **"⋮"** menu (top right) → **"Import from File"**
+1. Open n8n at http://localhost:5678
+2. Login with credentials:
+   - Username: `admin`
+   - Password: `admin_password_456!`
+3. Click "Add workflow" → "Import from file"
 4. Select `n8n/workflows/validate-sentence.json`
-5. Click **"Import"**
+5. Click "Import"
 
-### Step 5: Configure Gemini Credentials
+### 4. Configure Gemini Credentials
 
-1. Open the imported workflow
-2. Click on **"Google Gemini Chat Model"** node
-3. In the **Credential** dropdown:
-   - If no credential exists:
-     - Click **"Create New"**
-     - Name: `Google Gemini API`
-     - API Key: Paste your Gemini API key
-     - Click **"Save"**
-   - If credential exists:
-     - Select existing credential
-     - Verify API key is correct
+1. Click on the "Google Gemini" node
+2. In the "Credentials" section, click "Create New"
+3. Enter your Gemini API key
+4. Click "Save"
 
-### Step 6: Activate Workflow
+### 5. Activate Workflow
 
-1. Click **"Inactive"** toggle (top right)
-2. It should turn to **"Active"** (green)
-3. Workflow is now ready to receive requests!
+1. Click the "Inactive" toggle (top right)
+2. It should turn green and say "Active"
+3. Copy the webhook URL (should be: `http://n8n:5678/webhook/validate-sentence`)
 
-## 🧪 Testing the Workflow
+## Workflow Details
 
-### Test via n8n Interface
+### Nodes
 
-1. In the workflow editor, click **"Webhook"** node
-2. Click **"Listen for Test Event"**
-3. In another terminal, send a test request:
-   ```bash
-   curl -X POST http://localhost:5678/webhook/validate-sentence \
-     -H "Content-Type: application/json" \
-     -d '{
-       "word": "apple",
-       "sentence": "I eat an apple every day."
-     }'
-   ```
+1. **Webhook** - Receives POST requests with sentence data
+2. **Prepare Prompt** - Formats the prompt for Gemini
+3. **Google Gemini** - Sends prompt to Gemini AI
+4. **Parse Response** - Extracts validation results
+5. **Respond to Webhook** - Returns results to backend
 
-4. Check the response:
-   ```json
-   {
-     "score": 9.0,
-     "cefr_level": "A2",
-     "feedback": "Excellent! Your sentence correctly uses 'apple' with proper grammar.",
-     "corrected_sentence": "I eat an apple every day."
-   }
-   ```
+### Input Format
 
-### Test via Worddee.ai App
-
-1. Open frontend: `http://localhost:3000`
-2. Click **"Get Random Word"**
-3. Type a practice sentence
-4. Click **"Submit"**
-5. You should see real AI feedback instead of mock data!
-
-## 📊 Workflow Nodes Explained
-
-### 1. Webhook (Trigger)
-- **Type**: POST endpoint
-- **URL**: `/webhook/validate-sentence`
-- **Input**: `{ "word": "...", "sentence": "..." }`
-- **Purpose**: Receives sentence validation requests from backend
-
-### 2. Google Gemini Chat Model
-- **Model**: `gemini-1.5-flash`
-- **Temperature**: 0.3 (focused, consistent responses)
-- **System Prompt**: Acts as English teacher evaluating sentences
-- **Purpose**: Validates sentence using AI
-
-### 3. Format Response (Code Node)
-- **Language**: JavaScript
-- **Purpose**: 
-  - Parse JSON from AI response
-  - Validate score (0-10 range)
-  - Ensure all required fields exist
-  - Handle errors gracefully
-
-### 4. Respond to Webhook
-- **Type**: JSON response
-- **Purpose**: Send formatted result back to backend
-
-## 🔧 Troubleshooting
-
-### Workflow Not Receiving Requests
-
-**Problem**: Backend shows "n8n validation failed, using mock"
-
-**Solutions**:
-1. Check workflow is **Active** (green toggle)
-2. Verify webhook path: `/webhook/validate-sentence`
-3. Check n8n container is running:
-   ```bash
-   docker ps | grep n8n
-   ```
-4. Test webhook directly:
-   ```bash
-   curl -X POST http://localhost:5678/webhook/validate-sentence \
-     -H "Content-Type: application/json" \
-     -d '{"word":"test","sentence":"This is a test."}'
-   ```
-
-### Gemini API Errors
-
-**Problem**: `401 Unauthorized` or `Invalid API Key`
-
-**Solutions**:
-1. Verify API key in n8n credentials
-2. Check API key is active at [Google AI Studio](https://aistudio.google.com/app/apikey)
-3. Ensure no extra spaces in API key
-4. Try regenerating API key
-
-**Problem**: `429 Too Many Requests`
-
-**Solutions**:
-1. You've exceeded free tier quota
-2. Wait a few minutes and try again
-3. Consider upgrading to paid plan
-
-### Workflow Execution Errors
-
-**Problem**: Workflow fails at Format Response node
-
-**Solutions**:
-1. Check AI response format in execution logs
-2. Verify JSON parsing logic in Code node
-3. Test with simple sentences first
-
-## 📝 Customization
-
-### Adjust Scoring Strictness
-
-Edit the system prompt in **Google Gemini Chat Model** node:
-
-```
-For stricter grading:
-"Be strict with grammar errors. Deduct 2 points for each mistake."
-
-For more lenient grading:
-"Focus on communication effectiveness over perfect grammar."
-```
-
-### Change CEFR Level Criteria
-
-```
-"Assign CEFR levels based on:
-- A1/A2: Simple sentences, basic vocabulary
-- B1/B2: Complex sentences, varied vocabulary
-- C1/C2: Advanced structures, idiomatic expressions"
-```
-
-### Add More Feedback Details
-
-```
-Respond with this JSON format:
+```json
 {
-  "score": 0-10,
-  "cefr_level": "A1-C2",
-  "feedback": "detailed explanation",
-  "corrected_sentence": "improved version",
-  "grammar_errors": ["list of specific errors"],
-  "vocabulary_usage": "assessment of word usage",
-  "suggestions": ["improvement tips"]
+  "word": "example",
+  "definition": "a thing characteristic of its kind",
+  "sentence": "This is an example sentence."
 }
 ```
 
-## 🔗 Integration with Backend
+### Output Format
 
-The backend (`backend/services/ai_service.py`) automatically:
+```json
+{
+  "score": 8.5,
+  "cefr_level": "B2",
+  "is_correct": true,
+  "feedback": "Excellent sentence! Good use of the word...",
+  "corrected_sentence": "This is an example sentence.",
+  "original_word": "example",
+  "original_sentence": "This is an example sentence."
+}
+```
 
-1. Sends validation requests to n8n webhook
-2. Receives AI response
-3. Falls back to mock if n8n unavailable
-4. Saves results to database
+## Testing
 
-No code changes needed once workflow is active!
+### Test with curl
 
-## 📚 Additional Resources
+```bash
+curl -X POST http://localhost:5678/webhook/validate-sentence \
+  -H "Content-Type: application/json" \
+  -d '{
+    "word": "example",
+    "definition": "a thing characteristic of its kind",
+    "sentence": "This is an example of good writing."
+  }'
+```
 
-- [n8n Documentation](https://docs.n8n.io/)
-- [Google Gemini API Docs](https://ai.google.dev/docs)
-- [Worddee.ai Backend Code](../backend/services/ai_service.py)
-- [Webhook Testing Tool](https://webhook.site/)
+### Expected Response
 
-## ✅ Verification Checklist
+```json
+{
+  "score": 9.0,
+  "cefr_level": "B2",
+  "is_correct": true,
+  "feedback": "Excellent use of the word 'example'...",
+  "corrected_sentence": "This is an example of good writing."
+}
+```
 
-- [ ] Gemini API key obtained
-- [ ] API key added to `.env`
-- [ ] n8n accessible at `http://localhost:5678`
-- [ ] Workflow imported successfully
-- [ ] Gemini credentials configured
-- [ ] Workflow activated (green toggle)
-- [ ] Test request successful
-- [ ] Frontend shows real AI feedback
+## Scoring Criteria
 
----
+- **0-3**: Major grammar errors, word misused
+- **4-5**: Multiple grammar errors, word used incorrectly
+- **6-7**: Minor errors, word used acceptably
+- **8-9**: Good sentence, minor improvements possible
+- **10**: Perfect grammar, excellent word usage
 
-🎉 **Congratulations!** Your AI sentence validation is now fully functional!
+## CEFR Levels
+
+- **A1/A2**: Basic sentences, simple vocabulary
+- **B1/B2**: Intermediate complexity, correct structure
+- **C1/C2**: Advanced, sophisticated language
+
+## Troubleshooting
+
+### Workflow not responding
+
+1. Check if workflow is Active (green toggle)
+2. Verify Gemini credentials are configured
+3. Check n8n logs: `docker-compose logs n8n`
+
+### Invalid API key error
+
+1. Verify GEMINI_API_KEY in .env
+2. Check if API key is valid at [Google AI Studio](https://aistudio.google.com/app/apikey)
+3. Restart n8n: `docker-compose restart n8n`
+
+### Webhook URL not working
+
+1. Ensure N8N_WEBHOOK_URL in .env matches the workflow webhook
+2. Default: `http://n8n:5678/webhook/validate-sentence`
+3. Restart backend: `docker-compose restart worddee_backend`
+
+## Advanced Configuration
+
+### Temperature Setting
+
+Adjust creativity in the Gemini node:
+- Low (0.1-0.3): More consistent, factual responses
+- Medium (0.4-0.7): Balanced creativity
+- High (0.8-1.0): More creative, varied responses
+
+### Max Tokens
+
+Control response length (default: 500)
+- Increase for longer, more detailed feedback
+- Decrease for concise responses
+
+## Support
+
+For issues or questions:
+1. Check n8n documentation: https://docs.n8n.io
+2. Review Gemini API docs: https://ai.google.dev/docs
+3. Open an issue on GitHub

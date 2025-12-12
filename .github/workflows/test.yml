@@ -1,0 +1,78 @@
+name: Test Worddee-AI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: worddee_admin
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: worddee_test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install pytest pytest-cov httpx
+    
+    - name: Run backend tests
+      env:
+        DATABASE_URL: postgresql://worddee_admin:test_password@localhost:5432/worddee_test_db
+        VOCAB_API_URL: http://localhost:8001
+        N8N_WEBHOOK_URL: http://localhost:5678/webhook/validate-sentence
+      run: |
+        cd backend
+        pytest tests/ -v --cov=. --cov-report=xml
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+    
+    - name: Test Summary
+      if: always()
+      run: |
+        echo "✅ Tests completed!"
+        echo "Backend tests: Check pytest output above"
+        echo "Frontend build: Check npm output above"

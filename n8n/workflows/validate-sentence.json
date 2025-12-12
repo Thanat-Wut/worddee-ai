@@ -1,5 +1,5 @@
 {
-  "name": "Worddee.ai - Sentence Validation",
+  "name": "Validate English Sentence",
   "nodes": [
     {
       "parameters": {
@@ -8,7 +8,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "webhook-trigger",
+      "id": "webhook-node",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
@@ -17,28 +17,28 @@
     },
     {
       "parameters": {
-        "model": "gemini-1.5-flash",
+        "functionCode": "// Extract input from webhook\nconst word = items[0].json.word;\nconst definition = items[0].json.definition;\nconst sentence = items[0].json.sentence;\n\n// Create prompt for Gemini\nconst prompt = `You are an English language teacher. Analyze this sentence written by a student practicing vocabulary.\n\nWord to practice: \"${word}\"\nWord definition: \"${definition}\"\nStudent's sentence: \"${sentence}\"\n\nProvide your analysis in this EXACT JSON format (no additional text):\n{\n  \"score\": <number 0-10>,\n  \"cefr_level\": \"<A1|A2|B1|B2|C1|C2>\",\n  \"is_correct\": <true|false>,\n  \"feedback\": \"<detailed feedback>\",\n  \"corrected_sentence\": \"<corrected version or original if perfect>\"\n}\n\nScoring criteria:\n- 0-3: Major grammar errors, word misused\n- 4-5: Multiple grammar errors, word used incorrectly\n- 6-7: Minor errors, word used acceptably\n- 8-9: Good sentence, minor improvements possible\n- 10: Perfect grammar, excellent word usage\n\nCEFR levels:\n- A1/A2: Basic sentences, simple vocabulary\n- B1/B2: Intermediate complexity, correct structure\n- C1/C2: Advanced, sophisticated language";\n\nreturn [\n  {\n    json: {\n      prompt: prompt,\n      word: word,\n      definition: definition,\n      sentence: sentence\n    }\n  }\n];"
+      },
+      "id": "prepare-prompt",
+      "name": "Prepare Prompt",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "modelId": "gemini-1.5-flash",
+        "prompt": "={{ $json.prompt }}",
         "options": {
-          "temperature": 0.3
-        },
-        "messages": {
-          "values": [
-            {
-              "role": "system",
-              "content": "You are an expert English teacher evaluating student sentences.\n\nYour task:\n1. Check if the sentence correctly uses the given vocabulary word\n2. Evaluate grammar, spelling, and sentence structure\n3. Assess CEFR level (A1-C2) based on complexity\n4. Provide constructive feedback\n5. Suggest improvements if needed\n\nRespond ONLY with valid JSON in this exact format:\n{\n  \"score\": 0-10,\n  \"cefr_level\": \"A1|A2|B1|B2|C1|C2\",\n  \"feedback\": \"detailed explanation\",\n  \"corrected_sentence\": \"improved version or original if perfect\"\n}"
-            },
-            {
-              "role": "user",
-              "content": "=Vocabulary Word: {{ $json.word }}\n\nStudent's Sentence: {{ $json.sentence }}\n\nPlease evaluate this sentence."
-            }
-          ]
+          "temperature": 0.3,
+          "maxTokens": 500
         }
       },
-      "id": "gemini-chat",
-      "name": "Google Gemini Chat Model",
+      "id": "gemini-node",
+      "name": "Google Gemini",
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
-      "position": [450, 300],
+      "position": [650, 300],
       "credentials": {
         "googleGeminiOAuth2Api": {
           "id": "gemini-credentials",
@@ -48,13 +48,13 @@
     },
     {
       "parameters": {
-        "jsCode": "// Parse AI response and format for API\nconst items = $input.all();\nconst aiResponse = items[0].json.response || items[0].json.text || '{}';\n\nlet result;\ntry {\n  // Try to parse JSON from AI response\n  const jsonMatch = aiResponse.match(/\\{[^]*\\}/);\n  if (jsonMatch) {\n    result = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n} catch (error) {\n  // Fallback if parsing fails\n  result = {\n    score: 7.0,\n    cefr_level: 'B1',\n    feedback: 'Good attempt! Your sentence uses the word correctly.',\n    corrected_sentence: items[0].json.sentence\n  };\n}\n\n// Validate and normalize\nresult.score = Math.max(0, Math.min(10, parseFloat(result.score) || 7.0));\nresult.cefr_level = result.cefr_level || 'B1';\nresult.feedback = result.feedback || 'Good work!';\nresult.corrected_sentence = result.corrected_sentence || items[0].json.sentence;\n\nreturn [{ json: result }];"
+        "functionCode": "// Parse Gemini response\nlet result;\ntry {\n  const response = items[0].json.response || items[0].json.text || items[0].json.message;\n  \n  // Try to extract JSON from response\n  const jsonMatch = response.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    result = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n  \n  // Validate required fields\n  if (!result.score || !result.cefr_level || !result.feedback) {\n    throw new Error('Missing required fields');\n  }\n  \n  // Ensure score is between 0-10\n  result.score = Math.max(0, Math.min(10, Number(result.score)));\n  \n  // Validate CEFR level\n  const validLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];\n  if (!validLevels.includes(result.cefr_level.toUpperCase())) {\n    result.cefr_level = 'B1'; // Default fallback\n  }\n  \n} catch (error) {\n  // Fallback if parsing fails\n  result = {\n    score: 7.0,\n    cefr_level: 'B1',\n    is_correct: true,\n    feedback: 'Good attempt! Your sentence demonstrates understanding of the word.',\n    corrected_sentence: items[0].json.sentence\n  };\n}\n\nreturn [\n  {\n    json: {\n      score: result.score,\n      cefr_level: result.cefr_level.toUpperCase(),\n      is_correct: result.is_correct !== false,\n      feedback: result.feedback,\n      corrected_sentence: result.corrected_sentence || items[0].json.sentence,\n      original_word: items[0].json.word,\n      original_sentence: items[0].json.sentence\n    }\n  }\n];"
       },
-      "id": "format-response",
-      "name": "Format Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [650, 300]
+      "id": "parse-response",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [850, 300]
     },
     {
       "parameters": {
@@ -75,7 +75,7 @@
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [850, 300]
+      "position": [1050, 300]
     }
   ],
   "connections": {
@@ -83,25 +83,36 @@
       "main": [
         [
           {
-            "node": "Google Gemini Chat Model",
+            "node": "Prepare Prompt",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Google Gemini Chat Model": {
+    "Prepare Prompt": {
       "main": [
         [
           {
-            "node": "Format Response",
+            "node": "Google Gemini",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Format Response": {
+    "Google Gemini": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
       "main": [
         [
           {
@@ -113,12 +124,11 @@
       ]
     }
   },
+  "active": false,
   "settings": {
-    "executionOrder": "v1"
+    "timezone": "Asia/Bangkok"
   },
-  "staticData": null,
-  "tags": ["worddee", "ai", "validation"],
-  "triggerCount": 0,
-  "updatedAt": "2025-12-12T15:36:00.000Z",
-  "versionId": "1"
+  "versionId": "1",
+  "id": "validate-sentence-workflow",
+  "tags": []
 }
