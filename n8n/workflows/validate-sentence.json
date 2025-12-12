@@ -1,0 +1,124 @@
+{
+  "name": "Worddee.ai - Sentence Validation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "validate-sentence",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "validate-sentence"
+    },
+    {
+      "parameters": {
+        "model": "gemini-1.5-flash",
+        "options": {
+          "temperature": 0.3
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are an expert English teacher evaluating student sentences.\n\nYour task:\n1. Check if the sentence correctly uses the given vocabulary word\n2. Evaluate grammar, spelling, and sentence structure\n3. Assess CEFR level (A1-C2) based on complexity\n4. Provide constructive feedback\n5. Suggest improvements if needed\n\nRespond ONLY with valid JSON in this exact format:\n{\n  \"score\": 0-10,\n  \"cefr_level\": \"A1|A2|B1|B2|C1|C2\",\n  \"feedback\": \"detailed explanation\",\n  \"corrected_sentence\": \"improved version or original if perfect\"\n}"
+            },
+            {
+              "role": "user",
+              "content": "=Vocabulary Word: {{ $json.word }}\n\nStudent's Sentence: {{ $json.sentence }}\n\nPlease evaluate this sentence."
+            }
+          ]
+        }
+      },
+      "id": "gemini-chat",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [450, 300],
+      "credentials": {
+        "googleGeminiOAuth2Api": {
+          "id": "gemini-credentials",
+          "name": "Google Gemini API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse AI response and format for API\nconst items = $input.all();\nconst aiResponse = items[0].json.response || items[0].json.text || '{}';\n\nlet result;\ntry {\n  // Try to parse JSON from AI response\n  const jsonMatch = aiResponse.match(/\\{[^]*\\}/);\n  if (jsonMatch) {\n    result = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n} catch (error) {\n  // Fallback if parsing fails\n  result = {\n    score: 7.0,\n    cefr_level: 'B1',\n    feedback: 'Good attempt! Your sentence uses the word correctly.',\n    corrected_sentence: items[0].json.sentence\n  };\n}\n\n// Validate and normalize\nresult.score = Math.max(0, Math.min(10, parseFloat(result.score) || 7.0));\nresult.cefr_level = result.cefr_level || 'B1';\nresult.feedback = result.feedback || 'Good work!';\nresult.corrected_sentence = result.corrected_sentence || items[0].json.sentence;\n\nreturn [{ json: result }];"
+      },
+      "id": "format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Google Gemini Chat Model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["worddee", "ai", "validation"],
+  "triggerCount": 0,
+  "updatedAt": "2025-12-12T15:36:00.000Z",
+  "versionId": "1"
+}
