@@ -5,8 +5,8 @@ WORDDEE-AI Backend - Main Application
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routes import practice, dashboard
-from backend.db.database import engine, Base
+from routes import practice, dashboard
+from db.database import engine, Base
 
 # Create database tables
 Base.metadata.create_all(bind=engine)

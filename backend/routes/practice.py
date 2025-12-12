@@ -5,11 +5,11 @@ Practice Routes - Handle vocabulary practice and validation
 """
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from backend.db.database import get_db
-from backend.schemas.practice import PracticeSubmit, PracticeResponse
-from backend.services.vocab_service import VocabService
-from backend.services.ai_service import AIService
-from backend.services.practice_service import PracticeService
+from db.database import get_db
+from schemas.practice import PracticeSubmit, PracticeResponse
+from services.vocab_service import VocabService
+from services.ai_service import AIService
+from services.practice_service import PracticeService
 
 router = APIRouter(prefix="/api/practice", tags=["practice"])
 

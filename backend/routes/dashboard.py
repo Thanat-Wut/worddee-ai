@@ -5,9 +5,9 @@ Dashboard Routes - Statistics and progress tracking
 """
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from backend.db.database import get_db
-from backend.schemas.practice import DashboardStats, PracticeResponse
-from backend.services.practice_service import PracticeService
+from db.database import get_db
+from schemas.practice import DashboardStats, PracticeResponse
+from services.practice_service import PracticeService
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
