@@ -5,7 +5,7 @@ Practice Service - Session management and statistics
 """
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from backend.db.models import PracticeSession
+from db.models import PracticeSession
 from typing import Dict, List, Optional
 from datetime import datetime
 
