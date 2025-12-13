@@ -26,7 +26,7 @@ CREATE INDEX idx_words_difficulty ON words(difficulty_level);
 CREATE INDEX idx_sessions_word_id ON practice_sessions(word_id);
 CREATE INDEX idx_sessions_practiced_at ON practice_sessions(practiced_at DESC);
 
--- SEED DATA (30 words)
+
 
 
 INSERT INTO words (word, definition, difficulty_level) VALUES

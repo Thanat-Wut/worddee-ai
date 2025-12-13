@@ -1,6 +1,4 @@
-"""
-AI Service - Sentence validation via n8n webhook
-"""
+
 import os
 import httpx
 import logging
@@ -9,7 +7,7 @@ from typing import Dict
 logger = logging.getLogger(__name__)
 
 class AIService:
-    """Service for validating sentences using n8n workflow with Gemini AI."""
+    
     
     def __init__(self):
         self.webhook_url = os.getenv(
@@ -24,7 +22,7 @@ class AIService:
         definition: str,
         sentence: str
     ) -> Dict:
-        """Validate a practice sentence using AI."""
+        
         payload = {
             "word": word,
             "definition": definition,
@@ -71,7 +69,7 @@ class AIService:
             return self._get_mock_validation(sentence, "system error")
     
     def _get_mock_validation(self, sentence: str, error_msg: str = None) -> Dict:
-        """Generate mock validation result."""
+        
         feedback = "Good attempt! Your sentence demonstrates understanding."
         if error_msg:
             feedback = f"[Mock - {error_msg}] {feedback}"

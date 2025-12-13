@@ -19,15 +19,7 @@ ai_service = AIService()
 
 @router.get("/word")
 async def get_random_word(difficulty: str = None):
-    """
-    Get a random vocabulary word for practice.
-    
-    Args:
-        difficulty: Optional filter (Beginner, Intermediate, Advanced)
-    
-    Returns:
-        Word object with id, word, definition, difficulty_level, created_at
-    """
+
     try:
         word = await vocab_service.get_random_word(difficulty)
         if not word:
@@ -42,30 +34,21 @@ async def submit_practice(
     submission: PracticeSubmit,
     db: Session = Depends(get_db)
 ):
-    """
-    Submit a practice sentence for AI validation.
     
-    Args:
-        submission: PracticeSubmit with word_id and user_sentence
-        db: Database session
-    
-    Returns:
-        PracticeResponse with score, cefr_level, feedback, etc.
-    """
     try:
-        # Get word details
+        
         word = await vocab_service.get_word_by_id(submission.word_id)
         if not word:
             raise HTTPException(status_code=404, detail="Word not found")
         
-        # Validate sentence with AI
+        
         validation_result = await ai_service.validate_sentence(
             word=word["word"],
             definition=word["definition"],
             sentence=submission.user_sentence
         )
         
-        # Save practice session to database
+        
         practice_service = PracticeService(db)
         session = practice_service.save_session(
             word_id=submission.word_id,

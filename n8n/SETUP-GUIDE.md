@@ -17,7 +17,7 @@ This guide will help you set up the n8n workflow for AI-powered sentence validat
 ```bash
 open http://localhost:5678
 
-# Login credentials (from .env):
+
 Username: admin
 Password: admin_password_456!
 ```
@@ -98,7 +98,7 @@ Analyze this sentence and return JSON.
 ### Step 5: Test Webhook
 
 ```bash
-# Test the webhook directly
+
 curl -X POST http://localhost:5678/webhook/validate-sentence \
   -H "Content-Type: application/json" \
   -d '{
@@ -107,7 +107,7 @@ curl -X POST http://localhost:5678/webhook/validate-sentence \
     "sentence": "I practice English every day to improve my skills."
   }'
 
-# Expected output:
+
 {
   "score": 8,
   "cefr_level": "B2",
@@ -141,16 +141,16 @@ curl -X POST http://localhost:5678/webhook/validate-sentence \
 **Solution:**
 
 ```bash
-# 1. Check backend can reach n8n
+
 docker-compose logs worddee_backend | grep "Error validating"
 
-# 2. Test webhook directly (see above)
 
-# 3. Check .env has correct webhook URL
+
+# Check .env has correct webhook URL
 cat .env | grep N8N_WEBHOOK_URL
 # Should be: N8N_WEBHOOK_URL=http://n8n:5678/webhook/validate-sentence
 
-# 4. Restart backend
+
 docker-compose restart worddee_backend
 ```
 
@@ -158,11 +158,10 @@ docker-compose restart worddee_backend
 
 **Solution:**
 ```bash
-# Check all services are running
+
 docker-compose ps
 
-# All should show "Up" status
-# If n8n is not running:
+
 docker-compose up -d n8n
 ```
 
@@ -216,17 +215,17 @@ docker-compose up -d n8n
 ## ⚡ Quick Test Commands
 
 ```bash
-# Test n8n is running
+
 curl http://localhost:5678
 
-# Test webhook
+
 curl -X POST http://localhost:5678/webhook/validate-sentence \
   -H "Content-Type: application/json" \
   -d '{"word":"test","definition":"trial","sentence":"This is a test."}'
 
-# Test backend
+
 curl http://localhost:8000/health
 
-# Test full flow from frontend
+
 open http://localhost:3000
 ```

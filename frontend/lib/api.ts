@@ -1,8 +1,4 @@
-/**
- * ════════════════════════════════════════════════════════════════
- * WORDDEE-AI Frontend - API Client
- * ════════════════════════════════════════════════════════════════
- */
+
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_WORDDEE_API_URL || 'http://localhost:8000';
 
@@ -40,9 +36,7 @@ class APIError extends Error {
 }
 
 export const api = {
-  /**
-   * Get a random word for practice
-   */
+  
   async getRandomWord(difficulty?: string): Promise<Word> {
     try {
       const params = difficulty ? `?difficulty=${difficulty}` : '';
@@ -57,9 +51,7 @@ export const api = {
     }
   },
 
-  /**
-   * Submit practice sentence for validation
-   */
+  
   async submitPractice(wordId: number, sentence: string): Promise<PracticeResult> {
     try {
       const res = await fetch(`${BACKEND_URL}/api/practice/submit`, {
@@ -80,9 +72,7 @@ export const api = {
     }
   },
 
-  /**
-   * Get dashboard statistics
-   */
+  
   async getDashboardStats(): Promise<DashboardStats> {
     try {
       const res = await fetch(`${BACKEND_URL}/api/dashboard/stats`);

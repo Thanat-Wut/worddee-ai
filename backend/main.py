@@ -1,14 +1,10 @@
-"""
-════════════════════════════════════════════════════════════════
-WORDDEE-AI Backend - Main Application
-════════════════════════════════════════════════════════════════
-"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import practice, dashboard
 from db.database import engine, Base
 
-# Create database tables
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -19,25 +15,23 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS middleware
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify exact origins
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
+
 app.include_router(practice.router)
 app.include_router(dashboard.router)
 
 
 @app.get("/")
 async def root():
-    """
-    Root endpoint - service information.
-    """
+    
     return {
         "service": "Worddee.ai Backend",
         "version": "1.0.0",
@@ -52,9 +46,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """
-    Health check endpoint.
-    """
+    
     return {"status": "healthy", "service": "worddee-backend"}
 
 

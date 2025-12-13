@@ -1,8 +1,4 @@
-/**
- * ════════════════════════════════════════════════════════════════
- * Practice Result Display Card
- * ════════════════════════════════════════════════════════════════
- */
+
 import { PracticeResult } from '@/lib/api';
 
 interface ResultCardProps {

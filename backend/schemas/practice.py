@@ -2,12 +2,10 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
-# ════════════════════════════════════════════════════════════════
-# Request Schemas
-# ════════════════════════════════════════════════════════════════
+
 
 class PracticeSubmit(BaseModel):
-    """Schema for submitting practice sentence"""
+    
     word_id: int = Field(..., description="ID of the word being practiced")
     user_sentence: str = Field(..., min_length=1, description="User's sentence")
     session_duration_ms: Optional[int] = Field(None, description="Time taken in milliseconds")
@@ -21,12 +19,10 @@ class PracticeSubmit(BaseModel):
             }
         }
 
-# ════════════════════════════════════════════════════════════════
-# Response Schemas
-# ════════════════════════════════════════════════════════════════
+
 
 class ValidationResult(BaseModel):
-    """Schema for AI validation result"""
+    
     score: float = Field(..., ge=0, le=10, description="Score from 0-10")
     cefr_level: str = Field(..., description="CEFR level (A1, A2, B1, B2, C1, C2)")
     feedback: str = Field(..., description="Detailed feedback")
@@ -43,7 +39,7 @@ class ValidationResult(BaseModel):
         }
 
 class PracticeResponse(BaseModel):
-    """Schema for practice submission response"""
+    
     session_id: int
     word_id: int
     user_sentence: str
@@ -69,7 +65,7 @@ class PracticeResponse(BaseModel):
         }
 
 class DashboardStats(BaseModel):
-    """Schema for dashboard statistics"""
+    
     total_sessions: int
     average_score: float
     most_common_level: str

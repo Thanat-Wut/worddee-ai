@@ -1,8 +1,4 @@
-"""
-════════════════════════════════════════════════════════════════
-Dashboard Routes - Statistics and progress tracking
-════════════════════════════════════════════════════════════════
-"""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db.database import get_db
@@ -14,21 +10,16 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 @router.get("/stats", response_model=DashboardStats)
 async def get_dashboard_stats(db: Session = Depends(get_db)):
-    """
-    Get user's practice statistics and recent sessions.
-    
-    Returns:
-        DashboardStats with total_sessions, average_score, most_common_level, recent_sessions
-    """
+
     practice_service = PracticeService(db)
     
-    # Get statistics
+    
     stats = practice_service.get_statistics()
     
-    # Get recent sessions (last 10)
+    
     recent_sessions = practice_service.get_recent_sessions(limit=10)
     
-    # Convert sessions to response format
+    
     recent_sessions_data = [
         PracticeResponse(
             session_id=session.id,

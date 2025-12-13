@@ -1,13 +1,7 @@
-# ════════════════════════════════════════════════════════════════
-# WORDDEE-AI - Docker Compose Configuration
-# ════════════════════════════════════════════════════════════════
-# Orchestrates 5 services for the complete platform
-# ════════════════════════════════════════════════════════════════
+
 version: '3.9'
 services:
- # ══════════════════════════════════════════════════════════════
- # Worddee API - Vocabulary Management Microservice
- # ══════════════════════════════════════════════════════════════
+
  worddee_api:
    build:
      context: ../worddee-api
@@ -33,9 +27,7 @@ services:
      timeout: 10s
      retries: 3
    restart: unless-stopped
- # ══════════════════════════════════════════════════════════════
- # Worddee Backend - Practice Validation & Dashboard
- # ══════════════════════════════════════════════════════════════
+
  worddee_backend:
    build:
      context: ./backend
@@ -64,9 +56,7 @@ services:
      timeout: 10s
      retries: 3
    restart: unless-stopped
- # ══════════════════════════════════════════════════════════════
- # Frontend - Next.js Application
- # ══════════════════════════════════════════════════════════════
+
  frontend:
    build:
      context: ./frontend
@@ -92,9 +82,7 @@ services:
      timeout: 10s
      retries: 3
    restart: unless-stopped
- # ══════════════════════════════════════════════════════════════
- # PostgreSQL - Shared Database
- # ══════════════════════════════════════════════════════════════
+
  postgres:
    image: postgres:16-alpine
    container_name: worddee_postgres
@@ -115,9 +103,7 @@ services:
      timeout: 5s
      retries: 5
    restart: unless-stopped
- # ══════════════════════════════════════════════════════════════
- # n8n - Workflow Automation & AI Integration
- # ══════════════════════════════════════════════════════════════
+
  n8n:
    image: n8nio/n8n:latest
    container_name: worddee_n8n
@@ -136,15 +122,11 @@ services:
    depends_on:
      - worddee_backend
    restart: unless-stopped
-# ════════════════════════════════════════════════════════════════
-# Networks
-# ════════════════════════════════════════════════════════════════
+
 networks:
  worddee_network:
    driver: bridge
-# ════════════════════════════════════════════════════════════════
-# Volumes
-# ════════════════════════════════════════════════════════════════
+
 volumes:
  postgres_data:
    driver: local

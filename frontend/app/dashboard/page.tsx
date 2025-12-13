@@ -1,8 +1,4 @@
-/**
- * ════════════════════════════════════════════════════════════════
- * Dashboard Page - Statistics & Progress
- * ════════════════════════════════════════════════════════════════
- */
+
 'use client';
 
 import { useState, useEffect } from 'react';
